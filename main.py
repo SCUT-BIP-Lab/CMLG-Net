@@ -5,7 +5,7 @@
 
 import torch
 import torch.nn.functional as F
-from model.PBNet import Model_PBNet
+from model.CMLGNet import Model_CMLGNet
 from loss.loss import AMSoftmax
 
 def feedforward_demo(model, out_dim, is_train=False):
@@ -42,7 +42,7 @@ if __name__ == '__main__':
     # the identity feature dim
     out_dim = 512
 
-    model = Model_PBNet(frame_length=frame_length, feature_dim=feature_dim, out_dim=out_dim, sample_rate=sample_rate, clip_size=clip_size)
+    model = Model_CMLGNet(frame_length=frame_length, feature_dim=feature_dim, out_dim=out_dim, sample_rate=sample_rate, clip_size=clip_size)
     # feedforward_test
     id_feature = feedforward_demo(model, out_dim, is_train=False)
     # feedforward_train
