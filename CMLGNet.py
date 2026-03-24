@@ -9,7 +9,6 @@ import torch.nn.functional as F
 import numpy as np
 import torchvision
 from math import ceil
-from src.model.loss.proxy_loss import AMSoftmax
 
 
 class TSP(nn.Module):
