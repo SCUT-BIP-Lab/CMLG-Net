@@ -5,8 +5,8 @@
 
 import torch
 import torch.nn.functional as F
-from model.CMLGNet import Model_CMLGNet
-from loss.loss import AMSoftmax
+from CMLGNet import Model_CMLGNet
+from src.loss.loss import AMSoftmax
 
 def feedforward_demo(model, out_dim, is_train=False):
 
