@@ -80,9 +80,9 @@ CMLG-Net is compared with 27 state-of-the-art methods, including 2D CNNs, 3D CNN
 
 ### Accuracy and Efficiency on SCUT-DHGA-br
 
-![SCUT-DHGA Results](https://raw.githubusercontent.com/SCUT-BIP-Lab/CMLG-Net/master/img/SCUT-DHGA-br%20experiments.png)
-
 CMLG-Net significantly outperforms other approaches and meets real-time requirements on GPU devices.
+
+![SCUT-DHGA Results](https://raw.githubusercontent.com/SCUT-BIP-Lab/CMLG-Net/master/img/SCUT-DHGA-br%20experiments.png)
 
 ---
 
