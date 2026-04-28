@@ -29,3 +29,30 @@ class AMSoftmax(nn.Module):
         costh_m_s = self.s * costh_m
         loss = self.ce(costh_m_s, lb)
         return loss, costh
+
+
+class JointsMSELoss(nn.Module):
+    def __init__(self, use_target_weight):
+        super(JointsMSELoss, self).__init__()
+        self.criterion = nn.MSELoss(reduction='mean')
+        self.use_target_weight = use_target_weight
+
+    def forward(self, output, target, target_weight=None):
+        batch_size = output.size(0)
+        num_joints = output.size(1)
+        heatmaps_pred = output.reshape((batch_size, num_joints, -1)).split(1, 1)  # (10,[torch.Size([16, 1, 3072])],..)
+        heatmaps_gt = target.reshape((batch_size, num_joints, -1)).split(1, 1)
+        loss = 0
+
+        for idx in range(num_joints):
+            heatmap_pred = heatmaps_pred[idx].squeeze()
+            heatmap_gt = heatmaps_gt[idx].squeeze()
+            if self.use_target_weight:
+                loss += 0.5 * self.criterion(
+                    heatmap_pred.mul(target_weight[:, idx]),
+                    heatmap_gt.mul(target_weight[:, idx])
+                )
+            else:
+                loss += 0.5 * self.criterion(heatmap_pred, heatmap_gt)
+
+        return loss / num_joints

@@ -3,18 +3,12 @@ import torch
 import csv
 import random
 import numpy as np
-from termcolor import cprint
 import os
-import trimesh
+import json
 from PIL import Image
 from numpy.random import randint
 from torchvideotransforms import video_transforms, volume_transforms
 from torch.utils.data.dataset import Dataset
-from torch.utils.data import DataLoader
-import matplotlib.pyplot as plt
-from torchvision.io import read_image
-from torchvision.io import ImageReadMode
-import json
 
 DIR = os.path.realpath(os.path.dirname(__file__))
 sys.path.insert(0, DIR)
@@ -94,6 +88,36 @@ def get_frames(slicelist, path_lst, idx, is_train=False):
         return imglist, video_name
 
 
+def get_keypoint(slicelist, path_list, idx, is_train=False):
+    kpt_path = path_list[idx]
+    video_name = os.path.split(kpt_path)[-1]
+    file = kpt_path + '.json'
+    with open(file) as f:
+        data = json.load(f)
+        kpt_frames = data['info']
+        dataset_name = data['maker']
+    if dataset_name == 'Real-DHGA':
+        fill_len = 3
+        img_size = 480
+    else:
+        fill_len = 2
+        img_size = 200
+    kpt_list = []
+    for i, slice_index in enumerate(slicelist):
+        key = str(slice_index+1).zfill(fill_len) + '.jpg'
+        try:
+            kpt = np.array(kpt_frames[key]['keypoints'])
+            kpt_list.append(kpt)
+        except KeyError:
+            print(dataset_name)
+
+    kpt_array = np.array(kpt_list).astype(np.float64)/img_size
+    if is_train:
+        return torch.from_numpy(kpt_array).to(torch.float32)
+    else:
+        return torch.from_numpy(kpt_array).to(torch.float32), video_name
+
+
 def image_transform(sample, share_transform, rgb_transform, other_transform=None):
     img_list = []
     modality_list = []
@@ -133,7 +157,7 @@ class TrainDataset(Dataset):
         for i, modal in enumerate(self.modal_list):
             self.modal_path_dic[modal] = []
             modal_dir_dic[modal] = vid_dir_lst[i]
-        # 读取测试配置文件
+
         print(train_label_file)
         id_class_lst = []
         gesture_class_lst = []
@@ -146,7 +170,7 @@ class TrainDataset(Dataset):
         idx = 0
         for i, row in enumerate(fin_csv):
             if i > 0:
-                if row[2] == 'False' or row[0] in ill_list:
+                if row[2] == 'False':
                     continue
                 else:
                     vid_name, id_class_ = row[0], int(row[1])
@@ -186,6 +210,12 @@ class TrainDataset(Dataset):
             if modality in ['RGB', 'Depth']:
                 frames = get_frames(slice_list, path_list, idx, is_train=True)
                 sample[modality] = frames
+            elif modality == 'kpt':
+                keypoints = get_keypoint(slice_list, path_list, idx, is_train=True)
+                sample[modality] = keypoints
+            else:
+                print(f"Error modality:{modality}")
+                sys.exit(1)
         sample = image_transform(sample, self.share_transform, self.rgb_transform, other_transform=self.other_transform)
         id_label = torch.tensor(self.label_lst_array[0, idx])  # 当前样本对应的标签[id_cls, ges_cls]
         ges_label = torch.tensor(self.label_lst_array[1, idx])
@@ -218,8 +248,6 @@ class EvalDataset(Dataset):
         self.vid_names = set()
         for i, row in enumerate(fin_csv):
             if i > 0:
-                if row[0] in ill_list or row[1] in ill_list:
-                    continue
                 self.vid_names.update(row[:2])
         for modal in self.modal_list:
             self.modal_path_dic[modal] = [os.path.join(modal_dir_dic[modal], vid_name) for vid_name in self.vid_names]
@@ -235,6 +263,12 @@ class EvalDataset(Dataset):
             if modality in ['RGB', 'Depth']:
                 frames, vid_name = get_frames(slice_list, path_list, idx, is_train=False)
                 sample[modality] = frames
+            elif modality == 'kpt':
+                keypoints, vid_name = get_keypoint(slice_list, path_list, idx, is_train=True)
+                sample[modality] = keypoints
+            else:
+                print(f"Error modality:{modality}")
+                sys.exit(1)
         sample = image_transform(sample, self.share_transform, self.rgb_transform, other_transform=self.other_transform)
         sample['vid_name'] = vid_name
         return sample

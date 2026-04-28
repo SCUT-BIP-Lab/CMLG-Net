@@ -1,16 +1,9 @@
 import csv
 import os
 import os.path as osp
-import sys
-import time
-import imageio
 import numpy as np
 import torch
-from PIL import Image
-from termcolor import cprint
 from torch.utils.data import DataLoader
-from torchvision import transforms
-from tqdm import tqdm
 from tqdm.contrib import tenumerate
 from src.dataset.base_dataset import TrainDataset, EvalDataset
 import importlib.util
@@ -30,7 +23,8 @@ class Trainer(object):
         super().__init__()
         self.mode = conf["mode"]
         self.model_save_dir = conf["model_save_dir"]
-        torch.set_num_threads(5)
+        self.global_step = 0
+        
         ######################################## Dataset & Dataloader ########################################
         if self.mode == "train":
             train_dataset = TrainDataset(conf)
@@ -39,7 +33,6 @@ class Trainer(object):
                                                shuffle=True,
                                                num_workers=4,
                                                pin_memory=True,
-                                               worker_init_fn=self.worker_init_fn,
                                                drop_last=True)
         self.eval_dataloader_dic = {}
         eval_label_files = conf["eval_label_files"]
@@ -119,7 +112,7 @@ class Trainer(object):
 
             result_sum.update(self.get_eer(all_features, vid_names, epoch))
 
-        for key, value in result_.items():
+        for key, value in result_sum.items():
             print('{}: {}'.format(key, value))
         self.model.train()
         return result_sum

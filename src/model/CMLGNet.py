@@ -8,42 +8,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 import torchvision
-from math import ceil
-
-
-class AMSoftmax(nn.Module):
-    def __init__(self,
-                 in_feats,
-                 n_classes,
-                 m=0.5,
-                 s=30):
-        super(AMSoftmax, self).__init__()
-        self.m = m
-        self.s = s
-        self.in_feats = in_feats
-        self.W = torch.nn.Parameter(torch.randn(in_feats, n_classes), requires_grad=True)
-        self.ce = nn.CrossEntropyLoss()
-        nn.init.xavier_normal_(self.W, gain=1)
-
-    def forward(self, x, lb, mask=None):
-        x_norm = torch.div(x, torch.norm(x, p=2, dim=1, keepdim=True).clamp(min=1e-12))
-        w_norm = torch.div(self.W, torch.norm(self.W, p=2, dim=0, keepdim=True).clamp(min=1e-12))
-        costh = torch.mm(x_norm, w_norm)
-        # print(x_norm.shape, w_norm.shape, costh.shape)
-        lb_view = lb.view(-1, 1)
-        if lb_view.is_cuda: lb_view = lb_view.cpu()
-        delt_costh = torch.zeros(costh.size()).scatter_(1, lb_view, self.m)
-        if x.is_cuda: delt_costh = delt_costh.cuda()
-        costh_m = costh - delt_costh
-        costh_m_s = self.s * costh_m
-        loss = self.ce(costh_m_s, lb)
-        if mask is not None:
-            mask = mask.view(-1).float()
-            loss = loss * mask
-            loss = loss.sum() / (mask.sum() + 1e-12)
-        else:
-            loss = loss.mean()
-        return loss, costh
+from src.loss.loss import AMSoftmax
 
 
 class TSP(nn.Module):
@@ -193,7 +158,6 @@ class Model_CMLGNet(torch.nn.Module):
     def __init__(self, conf):
         super(Model_CMLGNet, self).__init__()
 
-        self.conf = conf
         self.frame_length = 64  # there are 64 frames in each dynamic hand gesture video
         self.frame_size = 224
         self.feature_dim = 512
@@ -206,21 +170,20 @@ class Model_CMLGNet(torch.nn.Module):
         self.D_Branch.fc = nn.Linear(in_features=self.feature_dim, out_features=self.out_dim)
 
         # temp pyramid
-        self.temp_pyra_r1 = TempPyra(64, self.frame_length, conf)
-        self.temp_pyra_r2 = TempPyra(64, self.frame_length, conf)
-        self.temp_pyra_d1 = TempPyra(64, self.frame_length, conf)
-        self.temp_pyra_d2 = TempPyra(64, self.frame_length, conf)
+        self.tsp_r = TSP(64, self.frame_length)
+        self.tsp_d = TSP(64, self.frame_length)
+
 
         self.fc = nn.Linear(1024, 1024)
 
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.att = AttentionModule(dim=512, reduce_factor=2, nheads=8, dropout=0.1, layers=1, n_pos=512)
+        self.cmtnl = CMTNL(dim=512, reduce_factor=2, nheads=8, dropout=0.1, layers=1, n_pos=512)
 
         # loss function
-        if self.conf["mode"] == "train":
-            self.criterian_meg = AMSoftmax(in_feats=self.feature_dim * 2, n_classes=int(self.conf["classes_num"]))
-            self.criterian_rgb = AMSoftmax(in_feats=self.feature_dim, n_classes=int(self.conf["classes_num"]))
-            self.criterian_dep = AMSoftmax(in_feats=self.feature_dim, n_classes=int(self.conf["classes_num"]))
+        if conf["mode"] == "train":
+            self.criterian_meg = AMSoftmax(in_feats=self.feature_dim * 2, n_classes=int(conf["classes_num"]))
+            self.criterian_rgb = AMSoftmax(in_feats=self.feature_dim, n_classes=int(conf["classes_num"]))
+            self.criterian_dep = AMSoftmax(in_feats=self.feature_dim, n_classes=int(conf["classes_num"]))
 
     def forward(self, data, label=None):
         fis = {}
@@ -238,7 +201,7 @@ class Model_CMLGNet(torch.nn.Module):
 
         # R-Branch
         x_r = self.R_Branch.conv1(data_rgb)
-        x_r = self.temp_pyra_r1(x_r)
+        x_r = self.tsp_r1(x_r)
         x_r = self.R_Branch.bn1(x_r)
         x_r = self.R_Branch.relu(x_r)
         x_r = self.R_Branch.maxpool(x_r)
@@ -256,7 +219,7 @@ class Model_CMLGNet(torch.nn.Module):
 
         # D-Branch
         x_d = self.D_Branch.conv1(data_dep)
-        x_d = self.temp_pyra_d1(x_d)
+        x_d = self.tsp_d(x_d)
         x_d = self.D_Branch.bn1(x_d)
         x_d = self.D_Branch.relu(x_d)
         x_d = self.D_Branch.maxpool(x_d)
@@ -284,7 +247,7 @@ class Model_CMLGNet(torch.nn.Module):
             fis["id_feature"] = id_feature
             return fis
         else:
-            loss_meg, _ = self.criterian_meg(cv_feature, label)
+            loss_meg, _ = self.criterian_meg(id_feature, label)
             loss_rgb, _ = self.criterian_rgb(x_r_norm, label)
             loss_dep, _ = self.criterian_dep(x_d_norm, label)
             fis["loss"] = loss_meg + loss_rgb + loss_dep
