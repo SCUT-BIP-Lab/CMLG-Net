@@ -50,8 +50,8 @@ Please make sure the following libraries are installed successfully:
 ## How to use
 ```bash
 # Train CMLG-Net on SCUT-DHGA under MG protocol
-python ./src/main/train.py --conf_file ./conf/CMLGNet/MG/MG_SD_CMLGNet.conf --mode train
+python ./train.py --conf_file ./conf/CMLGNet/MG/MG_SD_CMLGNet.conf --mode train
 
 # Evaluate CMLG-Net on SCUT-DHGA under UMG protocol
-python ./src/main/train.py --conf_file ./conf/SSAF/UMG/UMG1_SD_CMLGNet.conf --mode eval
+python ./train.py --conf_file ./conf/SSAF/UMG/UMG1_SD_CMLGNet.conf --mode eval
 ```
