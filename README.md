@@ -90,7 +90,7 @@ CMLG-Net significantly outperforms other approaches and meets real-time requirem
 
 ### Prerequisites
 - Python 3.8+
-- PyTorch ≥ 2.2.1
+- PyTorch ≥ 2.4.0
 
 ### Installation
 
@@ -108,7 +108,7 @@ pip install -r requirements.txt
 data/
 ├── SCUT-DHGA/
 │   ├── color_hand/     # RGB iamges
-│   ├── depth_hand/          # Depth images
+│   ├── depth_hand/     # Depth images
 └── SCUT-DHGA-br/
     ├── color_hand/
     └── depth_hand/
@@ -129,14 +129,17 @@ python ./train.py --conf_file ./conf/SSAF/UMG/UMG1_SD_CMLGNet.conf --mode eval
 If you find this work useful, please cite:
 
 ```bibtex
-@article{zhang2024cmlg,
-  title={Robust and Accurate Hand Gesture Authentication With Cross-Modality Local-Global Behavior Analysis},
+@ARTICLE{zhang2024cmlg,
   author={Zhang, Yufeng and Kang, Wenxiong and Song, Wenwei},
-  journal={IEEE Transactions on Information Forensics and Security},
-  volume={19},
-  pages={8630-8643},
+  journal={IEEE Transactions on Information Forensics and Security}, 
+  title={Robust and Accurate Hand Gesture Authentication With Cross-Modality Local-Global Behavior Analysis}, 
   year={2024},
-  doi={10.1109/TIFS.2024.3423456}
+  volume={19},
+  number={},
+  pages={8630-8643},
+  keywords={Authentication;Videos;Feature extraction;Physiology;Robustness;Lighting;Spatiotemporal phenomena;Biometrics;hand gesture authentication;multimodal fusion;spatiotemporal analysis;behavioral characteristic representation},
+  doi={10.1109/TIFS.2024.3451367}}
+
 }
 ```
 
