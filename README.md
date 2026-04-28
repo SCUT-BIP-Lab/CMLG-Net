@@ -116,8 +116,8 @@ data/
 
 ### Training
 ```bash
-# Train CMLG-Net on SCUT-DHGA under MG protocol
-python ./train.py --conf_file ./conf/CMLGNet/MG/MG_SD_CMLGNet.conf --mode train
+# Train CMLG-Net on SCUT-DHGA under UMG protocol
+python ./train.py --conf_file ./conf/CMLGNet/UMG/UMG1_SD_CMLGNet.conf --mode train
 ```
 
 ### Evaluation
