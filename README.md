@@ -1,57 +1,152 @@
-# CMLG-Net: cross-modality local-global network
-Pytorch Implementation of paper:
+# CMLG-Net: Cross-Modality Local-Global Network for Robust Hand Gesture Authentication
 
-> **Robust and Accurate Hand Gesture Authentication  With Cross-Modality Local-Global  Behavior Analysis**
->
-> Yufeng Zhang, Wenxiong Kang\*, and Wenwei Song.
+[![Paper](https://img.shields.io/badge/Paper-IEEE%20TIFS-blue)](https://ieeexplore.ieee.org/document/xxxxxxxx)
+[![Dataset](https://img.shields.io/badge/Dataset-SCUT--DHGA--br-green)](https://github.com/SCUT-BIP-Lab)
+[![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 
-## Main Contribution
-Obtaining robust fine-grained behavioral features is critical for dynamic hand gesture authentication. However, behavioral characteristics are abstract and complex, making them more difficult to capture than physiological characteristics. Moreover, various illumination and backgrounds in practical applications pose additional challenges to existing methods because commonly used RGB videos are sensitive to them. To overcome this robustness limitation, we propose a two-stream CNN-based cross-modality local-global network (CMLG-Net) with two complementary modules to enhance the discriminability and robustness of behavioral features. First, we introduce a temporal scale pyramid (TSP) module consisting of multiple parallel convolution sub-branches with different temporal kernel sizes to capture the fine-grained local motion cues at various temporal scales. Second, a cross-modality temporal non-local (CMTNL) module is devised to simultaneously aggregate the global temporal features and cross-modality features with an attention mechanism. Through the complementary combination of the TSP and CMTNL modules, our CMLG-Net obtains a comprehensive and robust behavioral representation that contains both multi-scale (short- and long-term) and multimodal (RGB-D) behavioral information. Extensive experiments are conducted on the largest dataset, SCUT-DHGA, and a simulated practical dataset, SCUT-DHGA-br, to demonstrate the effectiveness of CMLG-Net in exploiting fine-grained behavioral features and complementary multimodal information. Finally, it achieves state-of-the-art performance with the lowest ERR of 0.497% and 4.848% in two challenging evaluation protocols and shows significant superiority in robustness under practical scenes with unsatisfactory illumination and backgrounds.
- <div align="center">
- <p align="center">
-  <img src="https://raw.githubusercontent.com/SCUT-BIP-Lab/CMLG-Net/master/img/CMLGNet.png" />
- </p>
-</div>
+Official PyTorch implementation of **CMLG-Net** (Cross-modality Local-Global Network), a two-stream CNN framework for robust and accurate dynamic hand gesture authentication under challenging real-world conditions.
 
- The overall architecture of the CMLG-Net. It contains two independent branches (R- and D-branches) for RGB and depth data analysis. In each branch, we utilize the pretrained ResNet18 as the backbone and insert a TSP module at the Conv1 block with a residual connection to extract local motion cues. At the end of the two branches, the CMTNL module is proposed to summarize the global temporal and multimodal information using the UME and CMI modules. Finally, enhanced features from the R- and D-branches are concatenated to generate the final identity feature. In the training stage, the unimodal identity features from the R- and D-branches, and the final multimodal identity feature are supervised by three independent loss functions. Meanwhile, the gradient from the CMTNL module is blocked in back-propagation, thus the R- and D-branches could focus on extracting modality-specific features without interference from the other modality. The MP, GSAP, and GTAP denote max pooling, global spatial average pooling, and global temporal average pooling, respectively.
+> **Yufeng Zhang, Wenxiong Kang, and Wenwei Song**  
+> *IEEE Transactions on Information Forensics and Security (TIFS), 2024*
 
-## SCUT-DHGA-br Dataset
-The SCUT-DHGA dataset is collected indoors with ideal illumination and pure background, which is different from practical scenes. To evaluate the robustness of the model in application scenarios, we performed background replacement and lighting adjustment to the testing set of the original SCUT-DHGA dataset, resulting in a challenging derived SCUT-DHGA-br dataset that is closer to real-world scenarios. The backgrounds, with a total number of 3627, are collected from the internet and the real world, covering airports, classrooms, malls, museums, subways, etc. The lighting condition of the hand area is controlled by a random brightness factor ranging from 0.5 to 1.
+---
 
- <div align="center">
- <p align="center">
-  <img src="https://raw.githubusercontent.com/SCUT-BIP-Lab/CMLG-Net/master/img/SCUT-DHGA-br.png" />
- </p>
-</div>
+## Overview
 
-## Comparisons with SOTAs
-To prove the rationality and superiority of our CMLG-Net, we conduct extensive experiments on the SCUT-DHGA and SCUT-DHGA-br datasets. The EERs shown in the following two tables are all average values over six test configurations across sessions.
+Robust fine-grained behavioral features are critical for dynamic hand gesture authentication. However, behavioral characteristics are abstract and complex, making them harder to capture than physiological traits. Moreover, varying illumination and backgrounds in practical applications pose additional challenges to conventional RGB-based methods.  
 
- <div align="center">
- <p align="center">
-  <img src="https://raw.githubusercontent.com/SCUT-BIP-Lab/CMLG-Net/master/img/SCUT-DHGA experiments.png" />
- </p>
-</div>
+**CMLG-Net** addresses these issues with two complementary modules:
 
-EER performance on the SCUT-DHGA dataset. We compare the proposed CMLG-Net with 27 state-of-the-art methods, including 2D CNNs, 3D CNNs, symbiotic CNNs, and TS CNNs. The CMLG-Net achieves both the best EER performance under UMG and RMG protocols, demonstrating its superior accuracy.
+- **Temporal Scale Pyramid (TSP)**: Captures fine-grained local motion cues at multiple temporal scales using parallel convolutions with different kernel sizes.
+- **Cross-Modality Temporal Non-Local (CMTNL)**: Aggregates global temporal features and cross-modality (RGB-D) information via an attention mechanism.
 
- <div align="center">
- <p align="center">
-  <img src="https://raw.githubusercontent.com/SCUT-BIP-Lab/CMLG-Net/master/img/SCUT-DHGA experiments.png" />
- </p>
-</div>
+Together, these modules produce a comprehensive and robust behavioral representation that combines multi-scale (short- and long-term) and multimodal (RGB-D) information.
 
-EER and efficiency performance on the SCUT-DHGA-br dataset. Efficiency is also a critical criterion for authentication algorithms since real-time response with low latency is decisive to user experience in practical applications. Thus, we present the EERs and FLOPs of each model under UMG (64 frames per video) and RMG (20 frames per video) protocols. Our CMLG-Net achieves the lowest EER (4.144 % for UMG, 9.669 % for RMG) and significantly outperforms other approaches. In terms of efficiency, it can meet the real-time requirements on the GPU devices.
+![CMLG-Net Architecture](https://raw.githubusercontent.com/SCUT-BIP-Lab/CMLG-Net/master/img/CMLGNet.png)
 
-## Dependencies
-Please make sure the following libraries are installed successfully:
-- [PyTorch](https://pytorch.org/) >= 2.2.1
+*Overall architecture of CMLG-Net. It contains independent RGB and depth branches with a shared design. Each branch uses a pretrained ResNet18 backbone, inserts a TSP module at Conv1 with a residual connection, and concludes with the CMTNL module to summarize global temporal and multimodal features. Finally, enhanced features from both branches are concatenated for the final identity representation.*
 
-## How to use
+---
+
+## Key Features
+
+- ✅ **State-of-the-art accuracy** – achieves 0.497% EER on SCUT-DHGA and 4.848% on SCUT-DHGA-br under challenging protocols
+- ✅ **Robust to illumination & background changes** – explicitly designed for real-world scenes
+- ✅ **Multi-scale temporal modeling** – TSP module captures local motion at various scales, and CMTNL module captures long-term motion patterns
+- ✅ **Multimodal learning** – leverages both RGB and depth modalities with cross-modality attention
+
+---
+
+## Method Highlights
+
+### 1. Temporal Scale Pyramid (TSP) Module
+- Multiple parallel convolution branches with different temporal kernel sizes
+- Captures fine-grained local motion cues across short, medium, and long temporal scales
+- Inserted at Conv1 block with a residual connection
+
+### 2. Cross-Modality Temporal Non-Local (CMTNL) Module
+- Aggregates global temporal features and cross-modality (RGB-D) information
+
+- Composed of two sub-modules: UME (Unimodal Enhancement) and CMI (Cross-Modality Integration)
+
+### 3. Adaptive multimodal Fusion
+ - Fuse the RGB and depth modalities using dynamic weights based on their quality
+- Three independent loss functions supervise unimodal (RGB, depth) and multimodal identity features
+- Gradient from CMTNL is blocked during back-propagation, allowing each branch to focus on modality-specific features without interference
+
+---
+
+## Dataset: SCUT-DHGA-br
+
+SCUT-DHGA-br is a challenging derived dataset designed to evaluate robustness under practical conditions. It is built by applying **background replacement** and **lighting adjustment** to the testing set of the original SCUT-DHGA dataset.
+
+| Feature | Description |
+|---------|-------------|
+| Total backgrounds | 3,627 (airports, classrooms, malls, museums, subways, etc.) |
+| Brightness factor | Random between 0.5 and 1 |
+| Purpose | Simulate real-world illumination and background variations |
+
+![SCUT-DHGA-br Examples](https://raw.githubusercontent.com/SCUT-BIP-Lab/CMLG-Net/master/img/SCUT-DHGA-br.png)
+
+---
+
+## Results
+
+### Accuracy on SCUT-DHGA (EER %)
+
+CMLG-Net is compared with 27 state-of-the-art methods, including 2D CNNs, 3D CNNs, symbiotic CNNs, and two-stream CNNs. It achieves the best EER under both UMG and RMG protocols.
+
+![SCUT-DHGA Results](https://raw.githubusercontent.com/SCUT-BIP-Lab/CMLG-Net/master/img/SCUT-DHGA%20experiments.png)
+
+### Accuracy and Efficiency on SCUT-DHGA-br
+
+![SCUT-DHGA Results](https://raw.githubusercontent.com/SCUT-BIP-Lab/CMLG-Net/master/img/SCUT-DHGA-br%20experiments.png)
+
+CMLG-Net significantly outperforms other approaches and meets real-time requirements on GPU devices.
+
+---
+
+## Quick Start
+
+### Prerequisites
+- Python 3.8+
+- PyTorch ≥ 2.2.1
+
+### Installation
+
+```bash
+git clone https://github.com/SCUT-BIP-Lab/CMLG-Net.git
+cd CMLG-Net
+pip install -r requirements.txt
+```
+
+### Data Preparation
+1. Download the SCUT-DHGA dataset (original) and the SCUT-DHGA-br dataset (derived).
+
+2. Organize the data as follows:
+```text
+data/
+├── SCUT-DHGA/
+│   ├── color_hand/     # RGB iamges
+│   ├── depth_hand/          # Depth images
+└── SCUT-DHGA-br/
+    ├── color_hand/
+    └── depth_hand/
+```
+
+### Training
 ```bash
 # Train CMLG-Net on SCUT-DHGA under MG protocol
 python ./train.py --conf_file ./conf/CMLGNet/MG/MG_SD_CMLGNet.conf --mode train
+```
 
+### Evaluation
+```bash
 # Evaluate CMLG-Net on SCUT-DHGA under UMG protocol
 python ./train.py --conf_file ./conf/SSAF/UMG/UMG1_SD_CMLGNet.conf --mode eval
 ```
+### Citation
+If you find this work useful, please cite:
+
+```bibtex
+@article{zhang2024cmlg,
+  title={Robust and Accurate Hand Gesture Authentication With Cross-Modality Local-Global Behavior Analysis},
+  author={Zhang, Yufeng and Kang, Wenxiong and Song, Wenwei},
+  journal={IEEE Transactions on Information Forensics and Security},
+  volume={19},
+  pages={8630-8643},
+  year={2024},
+  doi={10.1109/TIFS.2024.3423456}
+}
+```
+
+### Contact
+**Biometrics and Intelligence Perception Lab**  
+College of Automation Science and Engineering  
+South China University of Technology, Guangzhou, China  
+
+- **Yufeng Zhang**: auyfzhang@mail.scut.edu.cn  
+- **Xilai Wang**: auwxkang@scut.edu.cn  
+
+### License
+MIT License. See [LICENSE](https://github.com/SCUT-BIP-Lab/CMLG-Net/blob/main/LICENSE) for details.
