@@ -58,7 +58,7 @@ Together, these modules produce a comprehensive and robust behavioral representa
 
 ## Dataset: SCUT-DHGA-br
 
-SCUT-DHGA-br is a challenging derived dataset designed to evaluate robustness under practical conditions. It is built by applying **background replacement** and **lighting adjustment** to the testing set of the original SCUT-DHGA dataset.
+SCUT-DHGA-br is a challenging derived dataset designed to evaluate robustness under practical conditions. It is built by applying **background replacement** and **lighting adjustment** to the testing set of the original SCUT-DHGA dataset. This dataset can be downloaded from [SCUT-DHGA-br](https://github.com/SCUT-BIP-Lab/SCUT-DHGA-br).
 
 | Feature | Description |
 |---------|-------------|
