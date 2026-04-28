@@ -139,7 +139,6 @@ If you find this work useful, please cite:
   pages={8630-8643},
   keywords={Authentication;Videos;Feature extraction;Physiology;Robustness;Lighting;Spatiotemporal phenomena;Biometrics;hand gesture authentication;multimodal fusion;spatiotemporal analysis;behavioral characteristic representation},
   doi={10.1109/TIFS.2024.3451367}}
-
 }
 ```
 
