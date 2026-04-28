@@ -72,7 +72,7 @@ SCUT-DHGA-br is a challenging derived dataset designed to evaluate robustness un
 
 ## Results
 
-### Accuracy on SCUT-DHGA (EER %)
+### Accuracy on SCUT-DHGA
 
 CMLG-Net is compared with 27 state-of-the-art methods, including 2D CNNs, 3D CNNs, symbiotic CNNs, and two-stream CNNs. It achieves the best EER under both UMG and RMG protocols.
 
