@@ -148,7 +148,7 @@ College of Automation Science and Engineering
 South China University of Technology, Guangzhou, China  
 
 - **Yufeng Zhang**: auyfzhang@mail.scut.edu.cn  
-- **Xilai Wang**: auwxkang@scut.edu.cn  
+- **Wenxiong Kang**: auwxkang@scut.edu.cn  
 
 ### License
 MIT License. See [LICENSE](https://github.com/SCUT-BIP-Lab/CMLG-Net/blob/main/LICENSE) for details.
